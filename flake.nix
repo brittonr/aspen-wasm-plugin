@@ -25,6 +25,8 @@
         devShells.default = pkgs.mkShell {
           buildInputs = [
             rustToolchain
+            pkgs.clang
+            pkgs.llvmPackages.bintools
           ];
 
           shellHook = ''
