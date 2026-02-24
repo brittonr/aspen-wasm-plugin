@@ -385,11 +385,18 @@ async fn load_plugin(
         .unwrap_or(aspen_plugin_api::PLUGIN_DEFAULT_MEMORY)
         .min(aspen_constants::wasm::MAX_WASM_MEMORY_LIMIT);
 
+    // AOT-precompile the WASM module.
+    // Hyperlight-wasm 0.12's guest runtime uses Module::deserialize (wasmtime 36),
+    // which expects precompiled AOT artifacts, not raw .wasm bytes. We must
+    // compile on the host using the same wasmtime version and pass the AOT bytes.
+    let aot_bytes = precompile_wasm(&bytes)
+        .map_err(|e| anyhow::anyhow!("failed to AOT-compile WASM for '{}': {e}", manifest.name))?;
+
     // Create sandbox.
-    // Input buffer must be large enough to hold the entire WASM module bytes
+    // Input buffer must be large enough to hold the AOT artifact
     // (hyperlight pushes module via the input data buffer). Default is 192KB
-    // which is too small for typical plugins (~1.5MB). Size to module + headroom.
-    let input_buffer_size = bytes.len() + 128 * 1024; // module size + 128KB headroom
+    // which is too small for typical plugins. Size to artifact + headroom.
+    let input_buffer_size = aot_bytes.len() + 128 * 1024;
     let mut proto = hyperlight_wasm::SandboxBuilder::new()
         .with_guest_input_buffer_size(input_buffer_size)
         .with_guest_heap_size(memory_limit)
@@ -443,7 +450,7 @@ async fn load_plugin(
         .map_err(|e| anyhow::anyhow!("failed to load WASM runtime for '{}': {e}", manifest.name))?;
 
     let mut loaded = wasm_sb
-        .load_module_from_buffer(&bytes)
+        .load_module_from_buffer(&aot_bytes)
         .map_err(|e| anyhow::anyhow!("failed to load WASM module for '{}': {e}", manifest.name))?;
 
     // Verify plugin info matches manifest
@@ -577,4 +584,15 @@ mod tests {
 
         assert!(registry.is_empty(), "registry should remain empty when app_id is None");
     }
+}
+
+/// AOT-precompile raw WASM bytes into a serialized wasmtime module.
+///
+/// Hyperlight-wasm 0.12's guest runtime uses `Module::deserialize` (wasmtime 36),
+/// which expects precompiled artifacts. This function uses the same wasmtime
+/// version on the host to produce compatible AOT output.
+fn precompile_wasm(wasm_bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let engine = wasmtime::Engine::default();
+    let aot_bytes = engine.precompile_module(wasm_bytes)?;
+    Ok(aot_bytes)
 }
