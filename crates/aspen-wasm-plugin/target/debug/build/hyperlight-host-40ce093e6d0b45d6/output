@@ -1,0 +1,8 @@
+cargo:rerun-if-changed=build.rs
+cargo:rustc-check-cfg=cfg(gdb)
+cargo:rustc-check-cfg=cfg(kvm)
+cargo:rustc-cfg=kvm
+cargo:rustc-check-cfg=cfg(mshv3)
+cargo:rustc-cfg=mshv3
+cargo:rustc-check-cfg=cfg(crashdump)
+cargo:rustc-check-cfg=cfg(print_debug)

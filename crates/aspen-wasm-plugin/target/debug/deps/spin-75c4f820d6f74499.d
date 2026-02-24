@@ -1,0 +1,12 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/spin-75c4f820d6f74499.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/barrier.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lazy.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex/spin.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/once.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/relax.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/rwlock.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libspin-75c4f820d6f74499.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/barrier.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lazy.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex/spin.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/once.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/relax.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/rwlock.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/barrier.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/lazy.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/mutex/spin.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/once.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/relax.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.10.0/src/rwlock.rs:

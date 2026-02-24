@@ -1,0 +1,1 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/sysroot/target/x86_64-hyperlight-none/release/libsysroot.rlib: /home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/sysroot/crate/lib.rs

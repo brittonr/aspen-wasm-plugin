@@ -1,0 +1,9 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/x86_64-hyperlight-none/debug/deps/buddy_system_allocator-83ef085a55487cd7.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/frame.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/linked_list.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/x86_64-hyperlight-none/debug/deps/libbuddy_system_allocator-83ef085a55487cd7.rlib: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/frame.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/linked_list.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/x86_64-hyperlight-none/debug/deps/libbuddy_system_allocator-83ef085a55487cd7.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/frame.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/linked_list.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/frame.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/buddy_system_allocator-0.11.0/src/linked_list.rs:

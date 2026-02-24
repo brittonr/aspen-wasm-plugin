@@ -1,0 +1,11 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/n0_error-9bdbf318df074921.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/any.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/ext.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/macros.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/meta.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/../examples/basic.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libn0_error-9bdbf318df074921.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/any.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/ext.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/macros.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/meta.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/../examples/basic.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/any.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/error.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/ext.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/macros.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/meta.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/n0-error-0.1.2/src/../examples/basic.rs:

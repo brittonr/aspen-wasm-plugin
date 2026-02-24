@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/serde_bencode-03f08fb4eb5e37ea.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/de.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser/string.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/value.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libserde_bencode-03f08fb4eb5e37ea.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/de.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser/string.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/value.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/de.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/error.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/ser/string.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_bencode-0.2.4/src/value.rs:

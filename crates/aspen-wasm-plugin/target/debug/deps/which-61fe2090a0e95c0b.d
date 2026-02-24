@@ -1,0 +1,12 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/which-61fe2090a0e95c0b.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/checker.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/finder.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/helper.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/sys.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libwhich-61fe2090a0e95c0b.rlib: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/checker.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/finder.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/helper.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/sys.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libwhich-61fe2090a0e95c0b.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/checker.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/finder.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/helper.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/sys.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/checker.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/error.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/finder.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/helper.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/which-8.0.0/src/sys.rs:

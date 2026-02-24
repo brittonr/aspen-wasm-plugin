@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/hybrid_array-ccfaea9b041d45a5.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/sizes.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/from_fn.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/iter.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/traits.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/../README.md
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libhybrid_array-ccfaea9b041d45a5.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/sizes.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/from_fn.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/iter.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/traits.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/../README.md
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/sizes.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/from_fn.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/iter.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/traits.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.5/src/../README.md:

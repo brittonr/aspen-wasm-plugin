@@ -1,0 +1,12 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/built-001504a9417f92ed.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/environment.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/git.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/krono.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/util.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/../README.md
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libbuilt-001504a9417f92ed.rlib: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/environment.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/git.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/krono.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/util.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/../README.md
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libbuilt-001504a9417f92ed.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/environment.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/git.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/krono.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/util.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/../README.md
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/environment.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/git.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/krono.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/util.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/built-0.8.0/src/../README.md:

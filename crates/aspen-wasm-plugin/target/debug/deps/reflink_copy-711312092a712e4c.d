@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/reflink_copy-711312092a712e4c.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/reflink_block.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/utility.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/linux.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libreflink_copy-711312092a712e4c.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/reflink_block.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/utility.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/linux.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/reflink_block.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/mod.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/utility.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/mod.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reflink-copy-0.1.28/src/sys/unix/linux.rs:

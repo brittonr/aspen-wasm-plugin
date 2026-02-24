@@ -1,0 +1,6 @@
+[workspace]
+members = ["crates/aspen-wasm-plugin"]
+resolver = "2"
+
+[patch.crates-io]
+cargo-hyperlight = { path = "vendor/cargo-hyperlight" }

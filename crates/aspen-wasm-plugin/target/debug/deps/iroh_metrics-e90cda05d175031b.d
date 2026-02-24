@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/iroh_metrics-e90cda05d175031b.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/base.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/encoding.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/iterable.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/metrics.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/registry.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libiroh_metrics-e90cda05d175031b.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/base.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/encoding.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/iterable.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/metrics.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/registry.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/base.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/encoding.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/iterable.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/metrics.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iroh-metrics-0.37.0/src/registry.rs:

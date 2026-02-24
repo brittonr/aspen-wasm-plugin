@@ -1,0 +1,19 @@
+[package]
+name = "hyperlight-wasm-macro"
+version = "0.12.0"
+edition = "2024"
+description = """
+Procedural macros to generate Hyperlight Wasm host and guest bindings from component types
+"""
+
+[lib]
+name = "hyperlight_wasm_macro"
+proc-macro = true
+
+[dependencies]
+quote = { version = "1.0.42" }
+proc-macro2 = { version = "1.0.103" }
+syn = { version = "2.0.111" }
+itertools = { version = "0.14.0" }
+prettyplease = { version = "0.2.37" }
+hyperlight-component-util = { version = "0.12.0" }

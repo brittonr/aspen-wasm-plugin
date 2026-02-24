@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/pkcs8-51bf872b856d27ae.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/private_key_info.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/traits.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/version.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/../README.md
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libpkcs8-51bf872b856d27ae.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/error.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/private_key_info.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/traits.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/version.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/../README.md
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/error.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/private_key_info.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/traits.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/version.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pkcs8-0.11.0-rc.8/src/../README.md:

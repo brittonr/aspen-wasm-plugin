@@ -1,0 +1,6 @@
+cargo::rerun-if-changed=/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyperlight-wasm-0.12.0/vendor.tar
+cargo::warning=using vendor wasm_runtime from /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyperlight-wasm-0.12.0/vendor.tar
+cargo::rerun-if-changed=/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/wasm_runtime
+cargo::rerun-if-env-changed=WIT_WORLD
+cargo:rerun-if-changed=build.rs
+cargo:rustc-check-cfg=cfg(gdb)

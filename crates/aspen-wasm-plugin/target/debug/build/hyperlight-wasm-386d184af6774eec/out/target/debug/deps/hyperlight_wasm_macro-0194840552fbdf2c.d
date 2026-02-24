@@ -1,0 +1,6 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/debug/deps/hyperlight_wasm_macro-0194840552fbdf2c.d: /home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/lib.rs /home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/wasmguest.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/target/debug/deps/libhyperlight_wasm_macro-0194840552fbdf2c.so: /home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/lib.rs /home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/wasmguest.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/lib.rs:
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/build/hyperlight-wasm-386d184af6774eec/out/vendor/hyperlight_wasm_macro/src/wasmguest.rs:

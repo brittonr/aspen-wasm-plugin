@@ -1,0 +1,9 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/kvm_bindings-383f0766e3d4d987.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/bindings.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/fam_wrappers.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/nested.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libkvm_bindings-383f0766e3d4d987.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/mod.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/bindings.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/fam_wrappers.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/nested.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/mod.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/bindings.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/fam_wrappers.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/kvm-bindings-0.14.0/src/x86_64/nested.rs:

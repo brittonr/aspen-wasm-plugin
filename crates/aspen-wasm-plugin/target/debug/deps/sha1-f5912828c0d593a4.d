@@ -1,0 +1,10 @@
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/sha1-f5912828c0d593a4.d: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/block_api.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/../README.md /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/soft.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/x86.rs
+
+/home/brittonr/git/aspen/crates/aspen-wasm-plugin/target/debug/deps/libsha1-f5912828c0d593a4.rmeta: /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/lib.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/block_api.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/../README.md /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/soft.rs /home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/x86.rs
+
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/lib.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/block_api.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/../README.md:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/soft.rs:
+/home/brittonr/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha1-0.11.0-rc.2/src/compress/x86.rs:

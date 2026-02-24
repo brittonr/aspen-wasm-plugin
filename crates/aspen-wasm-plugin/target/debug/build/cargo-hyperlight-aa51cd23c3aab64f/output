@@ -1,0 +1,3 @@
+cargo:rustc-env=GIT_HASH=v3.0.0-639-g63eb2885-dirty
+cargo:rustc-env=GIT_DATE=2026-02-18
+cargo:rerun-if-changed=.git/HEAD
