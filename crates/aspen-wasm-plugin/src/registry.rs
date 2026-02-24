@@ -16,6 +16,7 @@
 //! On reload, old plugins receive `plugin_shutdown` before being replaced.
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use aspen_blob::prelude::*;
@@ -108,8 +109,55 @@ impl LivePluginRegistry {
         let mut result_handlers: Vec<(Arc<dyn RequestHandler>, u32)> = Vec::new();
         let mut new_plugins: HashMap<String, LoadedPlugin> = HashMap::new();
 
+        // Stage 1: Parse all manifests
+        let mut parsed: Vec<(String, String, PluginManifest)> = Vec::new();
         for entry in scan_result.entries {
-            match load_plugin(ctx, blob_store, &entry.key, &entry.value, &secret_key, &hlc).await {
+            match serde_json::from_str::<PluginManifest>(&entry.value) {
+                Ok(manifest) => parsed.push((entry.key, entry.value, manifest)),
+                Err(e) => warn!(key = %entry.key, error = %e, "invalid manifest, skipping"),
+            }
+        }
+
+        // Stage 2: Resolve dependency-aware load order
+        let manifests: Vec<PluginManifest> = parsed.iter().map(|(_, _, m)| m.clone()).collect();
+        let ordered_names = match aspen_plugin_api::resolve::resolve_load_order(&manifests) {
+            Ok(ordered) => ordered.iter().map(|m| m.name.clone()).collect::<Vec<_>>(),
+            Err(errors) => {
+                for err in &errors {
+                    warn!(error = %err, "plugin dependency error");
+                }
+                // Graceful degradation: collect names of plugins involved in errors,
+                // filter them out, and use remaining in scan order
+                let error_plugins: HashSet<String> = errors.iter().flat_map(|e| match e {
+                    aspen_plugin_api::resolve::DependencyError::Missing { plugin, .. } => vec![plugin.clone()],
+                    aspen_plugin_api::resolve::DependencyError::VersionMismatch { plugin, .. } => vec![plugin.clone()],
+                    aspen_plugin_api::resolve::DependencyError::Cycle(names) => names.clone(),
+                    aspen_plugin_api::resolve::DependencyError::ApiVersionTooNew { plugin, .. } => vec![plugin.clone()],
+                }).collect();
+                parsed.iter()
+                    .filter(|(_, _, m)| m.enabled && !error_plugins.contains(&m.name))
+                    .map(|(_, _, m)| m.name.clone())
+                    .collect()
+            }
+        };
+
+        // Stage 3: Build lookup map from name → (key, json)
+        let lookup: HashMap<String, (&str, &str)> = parsed.iter()
+            .map(|(k, v, m)| (m.name.clone(), (k.as_str(), v.as_str())))
+            .collect();
+
+        // Stage 4: Load in resolved order with API version check
+        for name in &ordered_names {
+            let Some(&(key, json)) = lookup.get(name) else { continue };
+            
+            // Check API version
+            let manifest: PluginManifest = serde_json::from_str(json).unwrap(); // already parsed successfully
+            if let Err(e) = aspen_plugin_api::resolve::check_api_version(&manifest) {
+                warn!(plugin = %name, error = %e, "API version check failed, skipping");
+                continue;
+            }
+            
+            match load_plugin(ctx, blob_store, key, json, &secret_key, &hlc).await {
                 Ok(Some((handler, priority, manifest))) => {
                     // Call plugin_init lifecycle hook
                     match handler.call_init().await {
@@ -140,7 +188,7 @@ impl LivePluginRegistry {
                 }
                 Err(e) => {
                     warn!(
-                        key = %entry.key,
+                        key = %key,
                         error = %e,
                         "failed to load WASM plugin, skipping"
                     );
@@ -541,6 +589,11 @@ mod tests {
             kv_prefixes: vec!["forge:".to_string()],
             permissions: aspen_plugin_api::PluginPermissions::all(),
             signature: None,
+            description: None,
+            author: None,
+            tags: vec![],
+            min_api_version: None,
+            dependencies: vec![],
         };
 
         let registry = Arc::new(AppRegistry::new());
@@ -572,6 +625,11 @@ mod tests {
             kv_prefixes: vec![],
             permissions: aspen_plugin_api::PluginPermissions::default(),
             signature: None,
+            description: None,
+            author: None,
+            tags: vec![],
+            min_api_version: None,
+            dependencies: vec![],
         };
 
         let registry = Arc::new(AppRegistry::new());
