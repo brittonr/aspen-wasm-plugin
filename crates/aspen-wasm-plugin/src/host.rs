@@ -756,7 +756,7 @@ pub fn register_plugin_host_functions(
     // kv_put: returns String with tag prefix (\0 = success, \x01 = error)
     let ctx_kv_put = Arc::clone(&ctx);
     proto
-        .register("kv_put", move |key: String, value: Vec<u8>| -> String {
+        .register("kv_put", move |key: String, value: Vec<u8>, _len: i32| -> String {
             match kv_put(&ctx_kv_put, &key, &value) {
                 Ok(()) => "\0".to_string(),
                 Err(e) => format!("\x01{e}"),
@@ -840,7 +840,7 @@ pub fn register_plugin_host_functions(
     // Format: [4-byte expected_len (LE)] ++ expected ++ new_value
     let ctx_kv_cas = Arc::clone(&ctx);
     proto
-        .register("kv_cas", move |key: String, packed: Vec<u8>| -> String {
+        .register("kv_cas", move |key: String, packed: Vec<u8>, _len: i32| -> String {
             match unpack_two_vecs(&packed) {
                 Some((expected, new_value)) => match kv_cas(&ctx_kv_cas, &key, expected, new_value) {
                     Ok(()) => "\0".to_string(),
@@ -854,7 +854,7 @@ pub fn register_plugin_host_functions(
     // kv_batch: returns String with tag prefix (\0 = success, \x01 = error)
     let ctx_kv_batch = Arc::clone(&ctx);
     proto
-        .register("kv_batch", move |ops: Vec<u8>| -> String {
+        .register("kv_batch", move |ops: Vec<u8>, _len: i32| -> String {
             match kv_batch(&ctx_kv_batch, &ops) {
                 Ok(()) => "\0".to_string(),
                 Err(e) => format!("\x01{e}"),
@@ -924,7 +924,7 @@ pub fn register_plugin_host_functions(
     // '\0' + hash = success, '\x01' + error = failure
     let ctx_blob_put = Arc::clone(&ctx);
     proto
-        .register("blob_put", move |data: Vec<u8>| -> String {
+        .register("blob_put", move |data: Vec<u8>, _len: i32| -> String {
             match blob_put(&ctx_blob_put, &data) {
                 Ok(hash) => format!("\0{hash}"),
                 Err(e) => format!("\x01{e}"),
@@ -977,7 +977,7 @@ pub fn register_plugin_host_functions(
     // -- Crypto --
     let ctx_sign = Arc::clone(&ctx);
     proto
-        .register("sign", move |data: Vec<u8>| -> Vec<u8> {
+        .register("sign", move |data: Vec<u8>, _len: i32| -> Vec<u8> {
             if check_permission(&ctx_sign.plugin_name, "signing", ctx_sign.permissions.signing).is_err() {
                 return Vec::new();
             }
@@ -988,7 +988,7 @@ pub fn register_plugin_host_functions(
     // verify: packed params because hyperlight ABI forbids multiple Vec<u8> params.
     // Format: [4-byte data_len (LE)] ++ data ++ sig
     proto
-        .register("verify", move |key: String, packed: Vec<u8>| -> bool {
+        .register("verify", move |key: String, packed: Vec<u8>, _len: i32| -> bool {
             match unpack_two_vecs(&packed) {
                 Some((data, sig)) => verify(&key, data, sig),
                 None => false,
@@ -1015,7 +1015,7 @@ pub fn register_plugin_host_functions(
     // -- Scheduler --
     let ctx_schedule = Arc::clone(&ctx);
     proto
-        .register("schedule_timer", move |config_json: Vec<u8>| -> String {
+        .register("schedule_timer", move |config_json: Vec<u8>, _len: i32| -> String {
             if let Err(e) = check_permission(&ctx_schedule.plugin_name, "timers", ctx_schedule.permissions.timers) {
                 return format!("\x01{e}");
             }
