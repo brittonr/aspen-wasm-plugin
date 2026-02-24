@@ -385,8 +385,13 @@ async fn load_plugin(
         .unwrap_or(aspen_plugin_api::PLUGIN_DEFAULT_MEMORY)
         .min(aspen_constants::wasm::MAX_WASM_MEMORY_LIMIT);
 
-    // Create sandbox
+    // Create sandbox.
+    // Input buffer must be large enough to hold the entire WASM module bytes
+    // (hyperlight pushes module via the input data buffer). Default is 192KB
+    // which is too small for typical plugins (~1.5MB). Size to module + headroom.
+    let input_buffer_size = bytes.len() + 128 * 1024; // module size + 128KB headroom
     let mut proto = hyperlight_wasm::SandboxBuilder::new()
+        .with_guest_input_buffer_size(input_buffer_size)
         .with_guest_heap_size(memory_limit)
         .build()
         .map_err(|e| anyhow::anyhow!("failed to create sandbox for '{}': {e}", manifest.name))?;
