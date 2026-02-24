@@ -647,6 +647,27 @@ pub fn hlc_now(ctx: &PluginHostContext) -> u64 {
 }
 
 // ---------------------------------------------------------------------------
+// ABI helpers
+// ---------------------------------------------------------------------------
+
+/// Unpack two byte slices from a single `Vec<u8>` with a 4-byte LE length prefix.
+///
+/// Format: `[4-byte first_len (LE)] ++ first ++ second`
+///
+/// Returns `None` if the buffer is too short or the length prefix is invalid.
+fn unpack_two_vecs(packed: &[u8]) -> Option<(&[u8], &[u8])> {
+    if packed.len() < 4 {
+        return None;
+    }
+    let first_len = u32::from_le_bytes([packed[0], packed[1], packed[2], packed[3]]) as usize;
+    let first_end = 4 + first_len;
+    if first_end > packed.len() {
+        return None;
+    }
+    Some((&packed[4..first_end], &packed[first_end..]))
+}
+
+// ---------------------------------------------------------------------------
 // Sandbox registration (primitive mode)
 // ---------------------------------------------------------------------------
 
@@ -815,13 +836,17 @@ pub fn register_plugin_host_functions(
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_scan: {e}"))?;
 
-    // kv_cas: returns String with tag prefix (\0 = success, \x01 = error)
+    // kv_cas: packed params because hyperlight ABI forbids multiple Vec<u8> params.
+    // Format: [4-byte expected_len (LE)] ++ expected ++ new_value
     let ctx_kv_cas = Arc::clone(&ctx);
     proto
-        .register("kv_cas", move |key: String, expected: Vec<u8>, new_value: Vec<u8>| -> String {
-            match kv_cas(&ctx_kv_cas, &key, &expected, &new_value) {
-                Ok(()) => "\0".to_string(),
-                Err(e) => format!("\x01{e}"),
+        .register("kv_cas", move |key: String, packed: Vec<u8>| -> String {
+            match unpack_two_vecs(&packed) {
+                Some((expected, new_value)) => match kv_cas(&ctx_kv_cas, &key, expected, new_value) {
+                    Ok(()) => "\0".to_string(),
+                    Err(e) => format!("\x01{e}"),
+                },
+                None => "\x01kv_cas: malformed packed params".to_string(),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_cas: {e}"))?;
@@ -960,8 +985,15 @@ pub fn register_plugin_host_functions(
         })
         .map_err(|e| anyhow::anyhow!("failed to register sign: {e}"))?;
 
+    // verify: packed params because hyperlight ABI forbids multiple Vec<u8> params.
+    // Format: [4-byte data_len (LE)] ++ data ++ sig
     proto
-        .register("verify", move |key: String, data: Vec<u8>, sig: Vec<u8>| -> bool { verify(&key, &data, &sig) })
+        .register("verify", move |key: String, packed: Vec<u8>| -> bool {
+            match unpack_two_vecs(&packed) {
+                Some((data, sig)) => verify(&key, data, sig),
+                None => false,
+            }
+        })
         .map_err(|e| anyhow::anyhow!("failed to register verify: {e}"))?;
 
     let ctx_pubkey = Arc::clone(&ctx);
