@@ -434,9 +434,10 @@ async fn load_plugin(
         .min(aspen_constants::wasm::MAX_WASM_MEMORY_LIMIT);
 
     // AOT-precompile the WASM module.
-    // Hyperlight-wasm 0.12's guest runtime uses Module::deserialize (wasmtime 36),
-    // which expects precompiled AOT artifacts, not raw .wasm bytes. We must
-    // compile on the host using the same wasmtime version and pass the AOT bytes.
+    // Hyperlight-wasm's guest runtime uses Module::deserialize (wasmtime),
+    // which expects precompiled AOT artifacts, not raw .wasm bytes. The
+    // wasmtime version used here MUST exactly match the version baked into
+    // hyperlight-wasm's wasm_runtime (see hyperlight_wasm::get_wasmtime_version()).
     let aot_bytes = precompile_wasm(&bytes)
         .map_err(|e| anyhow::anyhow!("failed to AOT-compile WASM for '{}': {e}", manifest.name))?;
 
@@ -646,11 +647,18 @@ mod tests {
 
 /// AOT-precompile raw WASM bytes into a serialized wasmtime module.
 ///
-/// Hyperlight-wasm 0.12's guest runtime uses `Module::deserialize` (wasmtime 36),
-/// which expects precompiled artifacts. This function uses the same wasmtime
-/// version on the host to produce compatible AOT output.
+/// Hyperlight-wasm's guest runtime (`x86_64-hyperlight-none` target) uses
+/// `Module::deserialize`, which expects precompiled artifacts. We must:
+/// 1. Use the exact wasmtime version matching the embedded wasm_runtime
+/// 2. Target `x86_64-unknown-none` (closest to `x86_64-hyperlight-none`)
+///    since the guest is a bare-metal micro-VM, not a linux process
 fn precompile_wasm(wasm_bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
-    let engine = wasmtime::Engine::default();
+    let mut config = wasmtime::Config::new();
+    config.target("x86_64-unknown-none")?;
+    // The guest wasm_runtime enables component_model; precompilation must match.
+    config.wasm_component_model(true);
+    let engine = wasmtime::Engine::new(&config)?;
     let aot_bytes = engine.precompile_module(wasm_bytes)?;
     Ok(aot_bytes)
 }
+

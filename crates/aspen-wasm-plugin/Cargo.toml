@@ -21,10 +21,9 @@ aspen-traits = { path = "../../../aspen-traits/crates/aspen-traits" }
 # Hyperlight WASM sandbox
 hyperlight-wasm = "0.12"
 
-# Wasmtime for AOT precompilation (must match wasm_runtime's wasmtime version)
-# Hyperlight-wasm 0.12 uses Module::deserialize inside the sandbox guest,
-# so WASM modules must be precompiled to AOT artifacts on the host side.
-wasmtime = { version = "36.0.3", default-features = false, features = ["cranelift"] }
+# Wasmtime for AOT precompilation — must be exact version matching
+# hyperlight-wasm's embedded wasm_runtime (check get_wasmtime_version())
+wasmtime = { version = "=36.0.3", default-features = false, features = ["cranelift", "component-model"] }
 
 # Iroh blob hashes and crypto
 iroh-blobs = "0.97"
@@ -65,7 +64,7 @@ sql = ["aspen-rpc-core/sql", "aspen-core/sql"]
 hooks = ["dep:aspen-hooks", "dep:aspen-hooks-types", "aspen-rpc-core/hooks"]
 
 [dev-dependencies]
-aspen-testing = { path = "../../../aspen/crates/aspen-testing" }
+aspen-testing = { path = "../../../aspen-testing/crates/aspen-testing" }
 aspen-rpc-core = { path = "../../../aspen-rpc/crates/aspen-rpc-core", features = ["blob", "testing"] }
 aspen-client-api = { path = "../../../aspen-client-api/crates/aspen-client-api" }
 tokio = { version = "1.0", features = ["full", "test-util"] }
