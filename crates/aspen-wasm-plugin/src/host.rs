@@ -1259,6 +1259,74 @@ pub fn register_plugin_host_functions(
             .map_err(|e| anyhow::anyhow!("failed to register service_execute: {e}"))?;
     }
 
+    // -- API Version & Capabilities --
+
+    // query_host_api_version: returns the current host plugin API version string.
+    // Guests can use this at init time to adapt behavior or warn about mismatches.
+    proto
+        .register("query_host_api_version", || -> String {
+            aspen_plugin_api::PLUGIN_API_VERSION.to_string()
+        })
+        .map_err(|e| anyhow::anyhow!("failed to register query_host_api_version: {e}"))?;
+
+    // host_capabilities: returns a JSON array of available host function names.
+    // Allows guests to probe for optional capabilities (e.g., sql_query, hooks)
+    // instead of failing at call time.
+    {
+        // Build the capability list based on what was actually registered.
+        // Base functions are always available.
+        let mut capabilities: Vec<&'static str> = vec![
+            "log_info",
+            "log_debug",
+            "log_warn",
+            "now_ms",
+            "kv_get",
+            "kv_put",
+            "kv_delete",
+            "kv_scan",
+            "kv_cas",
+            "kv_batch",
+            "kv_execute",
+            "blob_has",
+            "blob_get",
+            "blob_put",
+            "node_id",
+            "is_leader",
+            "leader_id",
+            "random_bytes",
+            "sign",
+            "verify",
+            "public_key_hex",
+            "schedule_timer",
+            "cancel_timer",
+            "hook_subscribe",
+            "hook_unsubscribe",
+            "query_host_api_version",
+            "host_capabilities",
+        ];
+        // Conditional capabilities
+        #[cfg(feature = "sql")]
+        if ctx.sql_executor.is_some() {
+            capabilities.push("sql_query");
+        }
+        #[cfg(feature = "hooks")]
+        if ctx.hook_service.is_some() {
+            capabilities.push("hook_list");
+            capabilities.push("hook_metrics");
+            capabilities.push("hook_trigger");
+        }
+        if !ctx.service_executors.is_empty() {
+            capabilities.push("service_execute");
+        }
+
+        let capabilities_json = serde_json::to_string(&capabilities).unwrap_or_else(|_| "[]".to_string());
+        proto
+            .register("host_capabilities", move || -> String {
+                capabilities_json.clone()
+            })
+            .map_err(|e| anyhow::anyhow!("failed to register host_capabilities: {e}"))?;
+    }
+
     Ok(())
 }
 

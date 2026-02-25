@@ -26,6 +26,8 @@ mod registry;
 pub mod scheduler;
 
 pub use aspen_plugin_api::PluginHealth;
+pub use aspen_plugin_api::PluginMetrics;
+pub use aspen_plugin_api::PluginMetricsSnapshot;
 pub use aspen_plugin_api::PluginState;
 pub use handler::WasmPluginHandler;
 pub use registry::LivePluginRegistry;

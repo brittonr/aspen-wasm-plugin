@@ -22,6 +22,7 @@ use std::sync::Arc;
 use aspen_blob::prelude::*;
 use aspen_plugin_api::PluginHealth;
 use aspen_plugin_api::PluginManifest;
+use aspen_plugin_api::PluginMetricsSnapshot;
 use aspen_rpc_core::ClientProtocolContext;
 use aspen_rpc_core::RequestHandler;
 use tokio::sync::RwLock;
@@ -337,6 +338,21 @@ impl LivePluginRegistry {
         } else {
             None
         }
+    }
+
+    /// Get metrics snapshots for all loaded plugins.
+    pub async fn metrics_all(&self) -> Vec<(String, PluginMetricsSnapshot)> {
+        let plugins = self.plugins.read().await;
+        plugins
+            .iter()
+            .map(|(name, loaded)| (name.clone(), loaded.handler.metrics_snapshot()))
+            .collect()
+    }
+
+    /// Get metrics snapshot for a specific plugin.
+    pub async fn metrics_one(&self, name: &str) -> Option<PluginMetricsSnapshot> {
+        let plugins = self.plugins.read().await;
+        plugins.get(name).map(|loaded| loaded.handler.metrics_snapshot())
     }
 
     /// Get a snapshot of all loaded handler/priority pairs.

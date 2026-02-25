@@ -11,10 +11,13 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
+use std::time::Instant;
 
 use aspen_client_api::ClientRpcRequest;
 use aspen_client_api::ClientRpcResponse;
 use aspen_plugin_api::PluginHealth;
+use aspen_plugin_api::PluginMetrics;
+use aspen_plugin_api::PluginMetricsSnapshot;
 use aspen_plugin_api::PluginState;
 use aspen_rpc_core::ClientProtocolContext;
 use aspen_rpc_core::RequestHandler;
@@ -29,6 +32,12 @@ use crate::scheduler::PluginScheduler;
 /// requires `&mut self`. All sandbox calls go through `spawn_blocking` to avoid
 /// blocking the async executor, with a wall-clock timeout to prevent runaway
 /// guest execution.
+/// Maximum time to wait for in-flight requests to drain during shutdown (seconds).
+const SHUTDOWN_DRAIN_TIMEOUT_SECS: u64 = 30;
+
+/// Poll interval when waiting for in-flight requests to drain.
+const SHUTDOWN_DRAIN_POLL_MS: u64 = 50;
+
 pub struct WasmPluginHandler {
     /// Plugin name (leaked for 'static lifetime requirement of `RequestHandler::name`).
     name: &'static str,
@@ -49,6 +58,12 @@ pub struct WasmPluginHandler {
     /// Tiger Style: Atomic state tracking enables concurrent health checks
     /// and graceful shutdown without blocking request processing.
     state: Arc<AtomicU8>,
+    /// Per-plugin request metrics (lock-free atomics).
+    ///
+    /// Tiger Style: Metrics are collected without locking or blocking
+    /// request processing. The `active_requests` field doubles as the
+    /// drain counter for graceful shutdown.
+    metrics: Arc<PluginMetrics>,
     /// Timer scheduler for background work. Initialized after successful `call_init`.
     scheduler: std::sync::OnceLock<Arc<PluginScheduler>>,
     /// Pending scheduler requests from guest calls. Shared with host context.
@@ -80,6 +95,7 @@ impl WasmPluginHandler {
             sandbox: Arc::new(std::sync::Mutex::new(sandbox)),
             execution_timeout,
             state: Arc::new(AtomicU8::new(0)), // Loading
+            metrics: Arc::new(PluginMetrics::new()),
             scheduler: std::sync::OnceLock::new(),
             scheduler_requests: Arc::new(std::sync::Mutex::new(Vec::new())),
             event_router: std::sync::OnceLock::new(),
@@ -105,6 +121,7 @@ impl WasmPluginHandler {
             sandbox: Arc::new(std::sync::Mutex::new(sandbox)),
             execution_timeout,
             state: Arc::new(AtomicU8::new(0)),
+            metrics: Arc::new(PluginMetrics::new()),
             scheduler: std::sync::OnceLock::new(),
             scheduler_requests,
             event_router: std::sync::OnceLock::new(),
@@ -143,6 +160,16 @@ impl WasmPluginHandler {
     /// Get the plugin name.
     pub fn plugin_name(&self) -> &str {
         self.name
+    }
+
+    /// Get a snapshot of per-plugin metrics.
+    pub fn metrics_snapshot(&self) -> PluginMetricsSnapshot {
+        self.metrics.snapshot()
+    }
+
+    /// Get the raw metrics handle (for registry-level aggregation).
+    pub fn metrics(&self) -> &Arc<PluginMetrics> {
+        &self.metrics
     }
 
     /// Call the plugin's `plugin_init` export.
@@ -228,13 +255,44 @@ impl WasmPluginHandler {
 
     /// Call the plugin's `plugin_shutdown` export.
     ///
-    /// Sets state to Stopping, calls the guest export, and transitions
-    /// to Stopped.
+    /// Sets state to Stopping, waits for in-flight requests to drain
+    /// (bounded by `SHUTDOWN_DRAIN_TIMEOUT_SECS`), then calls the guest
+    /// export and transitions to Stopped.
     ///
     /// Tiger Style: Explicit shutdown contract enables graceful cleanup
-    /// and resource deallocation.
+    /// and resource deallocation. Bounded drain timeout prevents indefinite
+    /// hangs if a request is stuck.
     pub async fn call_shutdown(&self) -> anyhow::Result<()> {
         self.set_state(PluginState::Stopping);
+
+        // Wait for in-flight requests to drain before shutting down the sandbox.
+        // Once state is Stopping, new requests will be rejected by the state
+        // check in handle(), so active_requests will only decrease.
+        let drain_deadline = Instant::now() + Duration::from_secs(SHUTDOWN_DRAIN_TIMEOUT_SECS);
+        let active = self.metrics.active_requests.load(Ordering::SeqCst);
+        if active > 0 {
+            tracing::info!(
+                plugin = self.name,
+                active_requests = active,
+                "waiting for in-flight requests to drain before shutdown"
+            );
+            loop {
+                let current = self.metrics.active_requests.load(Ordering::SeqCst);
+                if current == 0 {
+                    break;
+                }
+                if Instant::now() >= drain_deadline {
+                    tracing::warn!(
+                        plugin = self.name,
+                        remaining = current,
+                        timeout_secs = SHUTDOWN_DRAIN_TIMEOUT_SECS,
+                        "drain timeout exceeded, proceeding with forced shutdown"
+                    );
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(SHUTDOWN_DRAIN_POLL_MS)).await;
+            }
+        }
 
         // Cancel all timers and subscriptions before calling guest shutdown
         if let Some(scheduler) = self.scheduler.get() {
@@ -409,6 +467,14 @@ impl RequestHandler for WasmPluginHandler {
             }
         }
 
+        // Track in-flight request for graceful shutdown draining.
+        // Increment active_requests before sandbox call, decrement on exit
+        // (including error paths) via a RAII drop guard.
+        self.metrics.active_requests.fetch_add(1, Ordering::SeqCst);
+        let _active_guard = ActiveRequestGuard(Arc::clone(&self.metrics));
+
+        let start = Instant::now();
+
         let input = marshal::serialize_request(&request)?;
         let input_len = input.len() as i32;
         let sandbox = Arc::clone(&self.sandbox);
@@ -426,6 +492,8 @@ impl RequestHandler for WasmPluginHandler {
         )
         .await
         .map_err(|_| {
+            let duration_ns = start.elapsed().as_nanos() as u64;
+            self.metrics.record(duration_ns, false);
             tracing::warn!(
                 plugin = handler_name,
                 timeout_secs = timeout.as_secs(),
@@ -433,16 +501,36 @@ impl RequestHandler for WasmPluginHandler {
             );
             anyhow::anyhow!("WASM plugin '{}' exceeded execution timeout of {}s", handler_name, timeout.as_secs())
         })?
-        .map_err(|e| anyhow::anyhow!("WASM plugin task panicked: {e}"))??;
+        .map_err(|e| {
+            let duration_ns = start.elapsed().as_nanos() as u64;
+            self.metrics.record(duration_ns, false);
+            anyhow::anyhow!("WASM plugin task panicked: {e}")
+        })??;
 
         // Process any commands enqueued during this request
         self.process_scheduler_commands().await;
         self.process_subscription_commands().await;
 
-        marshal::deserialize_response(&output)
+        let result = marshal::deserialize_response(&output);
+        let duration_ns = start.elapsed().as_nanos() as u64;
+        self.metrics.record(duration_ns, result.is_ok());
+
+        result
     }
 
     fn name(&self) -> &'static str {
         self.name
+    }
+}
+
+/// RAII guard that decrements `active_requests` on drop.
+///
+/// Tiger Style: Drop guard ensures the counter is always decremented,
+/// even on panic or early return, preventing shutdown drain from hanging.
+struct ActiveRequestGuard(Arc<PluginMetrics>);
+
+impl Drop for ActiveRequestGuard {
+    fn drop(&mut self) {
+        self.0.active_requests.fetch_sub(1, Ordering::SeqCst);
     }
 }
