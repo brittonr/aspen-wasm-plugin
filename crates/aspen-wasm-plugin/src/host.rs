@@ -743,6 +743,9 @@ pub fn register_plugin_host_functions(
                         }
                         None => "\x01".to_string(),
                     },
+                    Err(aspen_core::KeyValueStoreError::NotFound { .. }) => {
+                        "\x01".to_string()
+                    }
                     Err(e) => {
                         tracing::warn!(
                             plugin = %ctx_kv_get.plugin_name,
