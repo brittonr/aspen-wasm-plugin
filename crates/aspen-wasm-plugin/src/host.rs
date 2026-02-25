@@ -9,25 +9,29 @@
 //! Only `String`, `i32`/`u32`/`i64`/`u64`, `f32`/`f64`, `bool`, and
 //! `Vec<u8>` are supported. Complex types are encoded as follows:
 //!
+//! **NUL-safe tag bytes**: All tag bytes are >= 0x01 because hyperlight
+//! marshals return Strings through CString (NUL-terminated). Using 0x00
+//! as a tag byte causes CString::new() to fail with NulError.
+//!
 //! ### String-based results (`Result<(), String>`, `Result<String, String>`)
 //!
-//! - `\0` or `\0` + value = success
-//! - `\x01` + message = error
+//! - `\x01` or `\x01` + value = success
+//! - `\x02` + message = error
 //!
 //! Used by: `kv_put`, `kv_delete`, `kv_cas`, `blob_put`
 //!
-//! ### Vec-based option results (`Option<Vec<u8>>`)
+//! ### Option results (`Option<Vec<u8>>`)
 //!
-//! - `[0x00]` + data = found/success
-//! - `[0x01]` = not found
-//! - `[0x02]` + error message (UTF-8) = error
+//! - `\x01` + base64(data) = found/success
+//! - `\x02` = not found
+//! - `\x03` + error message (UTF-8) = error
 //!
 //! Used by: `kv_get`, `blob_get`
 //!
-//! ### Vec-based results (`Result<Vec<u8>, String>`)
+//! ### JSON results (`Result<Vec<u8>, String>`)
 //!
-//! - `[0x00]` + payload = success
-//! - `[0x01]` + error message (UTF-8) = error
+//! - `\x01` + payload = success
+//! - `\x02` + error message (UTF-8) = error
 //!
 //! Used by: `kv_scan` (payload is JSON-encoded `Vec<(String, Vec<u8>)>`)
 //!
@@ -718,7 +722,7 @@ pub fn register_plugin_host_functions(
 
     // -- KV Store --
     // kv_get: returns String with tag byte + base64-encoded value
-    // "\x00" + base64(value) = found, "\x01" = not-found, "\x02" + error_msg = error
+    // "\x01" + base64(value) = found, "\x02" = not-found, "\x03" + error_msg = error
     //
     // Returns String instead of Vec<u8> because hyperlight-wasm 0.12's VecBytes
     // return is broken (hl_return_to_val returns Val::I32 but type declares I64).
@@ -726,11 +730,11 @@ pub fn register_plugin_host_functions(
     proto
         .register("kv_get", move |key: String| -> String {
             if let Err(e) = check_permission(&ctx_kv_get.plugin_name, "kv_read", ctx_kv_get.permissions.kv_read) {
-                return format!("\x02{e}");
+                return format!("\x03{e}");
             }
             if let Err(e) = validate_key_prefix(&ctx_kv_get.plugin_name, &ctx_kv_get.allowed_kv_prefixes, &key, "read")
             {
-                return format!("\x02{e}");
+                return format!("\x03{e}");
             }
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
@@ -739,12 +743,12 @@ pub fn register_plugin_host_functions(
                     Ok(result) => match result.kv {
                         Some(entry) => {
                             let bytes = entry.value.into_bytes();
-                            format!("\x00{}", b64_encode(&bytes))
+                            format!("\x01{}", b64_encode(&bytes))
                         }
-                        None => "\x01".to_string(),
+                        None => "\x02".to_string(),
                     },
                     Err(aspen_core::KeyValueStoreError::NotFound { .. }) => {
-                        "\x01".to_string()
+                        "\x02".to_string()
                     }
                     Err(e) => {
                         tracing::warn!(
@@ -753,7 +757,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin kv_get failed"
                         );
-                        format!("\x02kv_get failed: {e}")
+                        format!("\x03kv_get failed: {e}")
                     }
                 }
             })
@@ -765,8 +769,8 @@ pub fn register_plugin_host_functions(
     proto
         .register("kv_put", move |key: String, value: Vec<u8>, _len: i32| -> String {
             match kv_put(&ctx_kv_put, &key, &value) {
-                Ok(()) => "\0".to_string(),
-                Err(e) => format!("\x01{e}"),
+                Ok(()) => "\x01".to_string(),
+                Err(e) => format!("\x02{e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_put: {e}"))?;
@@ -776,22 +780,22 @@ pub fn register_plugin_host_functions(
     proto
         .register("kv_delete", move |key: String| -> String {
             match kv_delete(&ctx_kv_delete, &key) {
-                Ok(()) => "\0".to_string(),
-                Err(e) => format!("\x01{e}"),
+                Ok(()) => "\x01".to_string(),
+                Err(e) => format!("\x02{e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_delete: {e}"))?;
 
     // kv_scan: returns String with tag byte + base64-encoded JSON
-    // "\x00" + base64(json_bytes) = ok, "\x01" + error_msg = error
+    // "\x01" + base64(json_bytes) = ok, "\x02" + error_msg = error
     let ctx_kv_scan = Arc::clone(&ctx);
     proto
         .register("kv_scan", move |prefix: String, limit: u32| -> String {
             if let Err(e) = check_permission(&ctx_kv_scan.plugin_name, "kv_read", ctx_kv_scan.permissions.kv_read) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             if let Err(e) = validate_scan_prefix(&ctx_kv_scan.plugin_name, &ctx_kv_scan.allowed_kv_prefixes, &prefix) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
@@ -810,8 +814,8 @@ pub fn register_plugin_host_functions(
                         let entries: Vec<(String, Vec<u8>)> =
                             result.entries.into_iter().map(|entry| (entry.key, entry.value.into_bytes())).collect();
                         match serde_json::to_vec(&entries) {
-                            Ok(json) => format!("\x00{}", b64_encode(&json)),
-                            Err(e) => format!("\x01kv_scan JSON encode failed: {e}"),
+                            Ok(json) => format!("\x01{}", b64_encode(&json)),
+                            Err(e) => format!("\x02kv_scan JSON encode failed: {e}"),
                         }
                     }
                     Err(e) => {
@@ -821,7 +825,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin kv_scan failed"
                         );
-                        format!("\x01kv_scan failed: {e}")
+                        format!("\x02kv_scan failed: {e}")
                     }
                 }
             })
@@ -835,10 +839,10 @@ pub fn register_plugin_host_functions(
         .register("kv_cas", move |key: String, packed: Vec<u8>, _len: i32| -> String {
             match unpack_two_vecs(&packed) {
                 Some((expected, new_value)) => match kv_cas(&ctx_kv_cas, &key, expected, new_value) {
-                    Ok(()) => "\0".to_string(),
-                    Err(e) => format!("\x01{e}"),
+                    Ok(()) => "\x01".to_string(),
+                    Err(e) => format!("\x02{e}"),
                 },
-                None => "\x01kv_cas: malformed packed params".to_string(),
+                None => "\x02kv_cas: malformed packed params".to_string(),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_cas: {e}"))?;
@@ -848,8 +852,8 @@ pub fn register_plugin_host_functions(
     proto
         .register("kv_batch", move |ops: Vec<u8>, _len: i32| -> String {
             match kv_batch(&ctx_kv_batch, &ops) {
-                Ok(()) => "\0".to_string(),
-                Err(e) => format!("\x01{e}"),
+                Ok(()) => "\x01".to_string(),
+                Err(e) => format!("\x02{e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_batch: {e}"))?;
@@ -862,13 +866,13 @@ pub fn register_plugin_host_functions(
         .map_err(|e| anyhow::anyhow!("failed to register blob_has: {e}"))?;
 
     // blob_get: returns String with tag byte + base64-encoded data
-    // "\x00" + base64(data) = found, "\x01" = not-found, "\x02" + error_msg = error
+    // "\x01" + base64(data) = found, "\x02" = not-found, "\x03" + error_msg = error
     let ctx_blob_get = Arc::clone(&ctx);
     proto
         .register("blob_get", move |hash: String| -> String {
             if let Err(e) = check_permission(&ctx_blob_get.plugin_name, "blob_read", ctx_blob_get.permissions.blob_read)
             {
-                return format!("\x02{e}");
+                return format!("\x03{e}");
             }
             let blob_hash = match hash.parse::<iroh_blobs::Hash>() {
                 Ok(h) => h,
@@ -879,14 +883,14 @@ pub fn register_plugin_host_functions(
                         error = %e,
                         "wasm plugin blob_get: invalid hash"
                     );
-                    return format!("\x02invalid hash: {e}");
+                    return format!("\x03invalid hash: {e}");
                 }
             };
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
                 match ctx_blob_get.blob_store.get_bytes(&blob_hash).await {
-                    Ok(Some(bytes)) => format!("\x00{}", b64_encode(&bytes)),
-                    Ok(None) => "\x01".to_string(),
+                    Ok(Some(bytes)) => format!("\x01{}", b64_encode(&bytes)),
+                    Ok(None) => "\x02".to_string(),
                     Err(e) => {
                         tracing::warn!(
                             plugin = %ctx_blob_get.plugin_name,
@@ -894,7 +898,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin blob_get failed"
                         );
-                        format!("\x02blob_get failed: {e}")
+                        format!("\x03blob_get failed: {e}")
                     }
                 }
             })
@@ -907,8 +911,8 @@ pub fn register_plugin_host_functions(
     proto
         .register("blob_put", move |data: Vec<u8>, _len: i32| -> String {
             match blob_put(&ctx_blob_put, &data) {
-                Ok(hash) => format!("\0{hash}"),
-                Err(e) => format!("\x01{e}"),
+                Ok(hash) => format!("\x01{hash}"),
+                Err(e) => format!("\x02{e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register blob_put: {e}"))?;
@@ -1000,24 +1004,24 @@ pub fn register_plugin_host_functions(
     proto
         .register("schedule_timer", move |config_json: Vec<u8>, _len: i32| -> String {
             if let Err(e) = check_permission(&ctx_schedule.plugin_name, "timers", ctx_schedule.permissions.timers) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             let config: aspen_plugin_api::TimerConfig = match serde_json::from_slice(&config_json) {
                 Ok(c) => c,
-                Err(e) => return format!("\x01invalid timer config: {e}"),
+                Err(e) => return format!("\x02invalid timer config: {e}"),
             };
             if config.name.is_empty() {
-                return "\x01timer name must not be empty".to_string();
+                return "\x02timer name must not be empty".to_string();
             }
             if config.name.len() > 64 {
-                return "\x01timer name too long (max 64 bytes)".to_string();
+                return "\x02timer name too long (max 64 bytes)".to_string();
             }
             match ctx_schedule.scheduler_requests.lock() {
                 Ok(mut reqs) => {
                     reqs.push(SchedulerCommand::Schedule(config));
-                    "\0".to_string()
+                    "\x01".to_string()
                 }
-                Err(e) => format!("\x01scheduler lock failed: {e}"),
+                Err(e) => format!("\x02scheduler lock failed: {e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register schedule_timer: {e}"))?;
@@ -1026,14 +1030,14 @@ pub fn register_plugin_host_functions(
     proto
         .register("cancel_timer", move |name: String| -> String {
             if let Err(e) = check_permission(&ctx_cancel.plugin_name, "timers", ctx_cancel.permissions.timers) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             match ctx_cancel.scheduler_requests.lock() {
                 Ok(mut reqs) => {
                     reqs.push(SchedulerCommand::Cancel(name));
-                    "\0".to_string()
+                    "\x01".to_string()
                 }
-                Err(e) => format!("\x01scheduler lock failed: {e}"),
+                Err(e) => format!("\x02scheduler lock failed: {e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register cancel_timer: {e}"))?;
@@ -1043,20 +1047,20 @@ pub fn register_plugin_host_functions(
     proto
         .register("hook_subscribe", move |pattern: String| -> String {
             if let Err(e) = check_permission(&ctx_hook_sub.plugin_name, "hooks", ctx_hook_sub.permissions.hooks) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             if pattern.is_empty() {
-                return "\x01hook pattern must not be empty".to_string();
+                return "\x02hook pattern must not be empty".to_string();
             }
             if pattern.len() > aspen_plugin_api::MAX_HOOK_PATTERN_LENGTH {
-                return format!("\x01hook pattern too long (max {} bytes)", aspen_plugin_api::MAX_HOOK_PATTERN_LENGTH);
+                return format!("\x02hook pattern too long (max {} bytes)", aspen_plugin_api::MAX_HOOK_PATTERN_LENGTH);
             }
             match ctx_hook_sub.subscription_requests.lock() {
                 Ok(mut reqs) => {
                     reqs.push(SubscriptionCommand::Subscribe(pattern));
-                    "\0".to_string()
+                    "\x01".to_string()
                 }
-                Err(e) => format!("\x01subscription lock failed: {e}"),
+                Err(e) => format!("\x02subscription lock failed: {e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register hook_subscribe: {e}"))?;
@@ -1065,14 +1069,14 @@ pub fn register_plugin_host_functions(
     proto
         .register("hook_unsubscribe", move |pattern: String| -> String {
             if let Err(e) = check_permission(&ctx_hook_unsub.plugin_name, "hooks", ctx_hook_unsub.permissions.hooks) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             match ctx_hook_unsub.subscription_requests.lock() {
                 Ok(mut reqs) => {
                     reqs.push(SubscriptionCommand::Unsubscribe(pattern));
-                    "\0".to_string()
+                    "\x01".to_string()
                 }
-                Err(e) => format!("\x01subscription lock failed: {e}"),
+                Err(e) => format!("\x02subscription lock failed: {e}"),
             }
         })
         .map_err(|e| anyhow::anyhow!("failed to register hook_unsubscribe: {e}"))?;
@@ -1088,7 +1092,7 @@ pub fn register_plugin_host_functions(
         proto
             .register("hook_list", move |_unused: String| -> String {
                 if let Err(e) = check_permission(&ctx_hook_list.plugin_name, "hooks", ctx_hook_list.permissions.hooks) {
-                    return format!("\x01{e}");
+                    return format!("\x02{e}");
                 }
                 hook_list_impl(&ctx_hook_list)
             })
@@ -1100,7 +1104,7 @@ pub fn register_plugin_host_functions(
                 if let Err(e) =
                     check_permission(&ctx_hook_metrics.plugin_name, "hooks", ctx_hook_metrics.permissions.hooks)
                 {
-                    return format!("\x01{e}");
+                    return format!("\x02{e}");
                 }
                 let filter = if handler_name.is_empty() {
                     None
@@ -1117,7 +1121,7 @@ pub fn register_plugin_host_functions(
                 if let Err(e) =
                     check_permission(&ctx_hook_trigger.plugin_name, "hooks", ctx_hook_trigger.permissions.hooks)
                 {
-                    return format!("\x01{e}");
+                    return format!("\x02{e}");
                 }
                 hook_trigger_impl(&ctx_hook_trigger, &request_json)
             })
@@ -1134,17 +1138,17 @@ pub fn register_plugin_host_functions(
         proto
             .register("sql_query", move |request_json: String| -> String {
                 if let Err(e) = check_permission(&ctx_sql.plugin_name, "sql_query", ctx_sql.permissions.sql_query) {
-                    return format!("\x01{e}");
+                    return format!("\x02{e}");
                 }
                 let executor = match &ctx_sql.sql_executor {
                     Some(ex) => Arc::clone(ex),
-                    None => return "\x01SQL query executor not available on this node".to_string(),
+                    None => return "\x02SQL query executor not available on this node".to_string(),
                 };
 
                 // Parse request
                 let req: SqlQueryHostRequest = match serde_json::from_str(&request_json) {
                     Ok(r) => r,
-                    Err(e) => return format!("\x01invalid sql_query request: {e}"),
+                    Err(e) => return format!("\x02invalid sql_query request: {e}"),
                 };
 
                 // Build the core request
@@ -1175,7 +1179,7 @@ pub fn register_plugin_host_functions(
                                 _ => aspen_core::SqlValue::Text(v.to_string()),
                             })
                             .collect(),
-                        Err(e) => return format!("\x01invalid params JSON: {e}"),
+                        Err(e) => return format!("\x02invalid params JSON: {e}"),
                     }
                 };
 
@@ -1220,11 +1224,11 @@ pub fn register_plugin_host_functions(
                         });
 
                         match serde_json::to_string(&response) {
-                            Ok(json) => format!("\0{json}"),
-                            Err(e) => format!("\x01failed to serialize SQL result: {e}"),
+                            Ok(json) => format!("\x01{json}"),
+                            Err(e) => format!("\x02failed to serialize SQL result: {e}"),
                         }
                     }
-                    Err(e) => format!("\x01{e}"),
+                    Err(e) => format!("\x02{e}"),
                 }
             })
             .map_err(|e| anyhow::anyhow!("failed to register sql_query: {e}"))?;
@@ -1239,7 +1243,7 @@ pub fn register_plugin_host_functions(
                 "kv_read",
                 ctx_kv_execute.permissions.kv_read || ctx_kv_execute.permissions.kv_write,
             ) {
-                return format!("\x01{e}");
+                return format!("\x02{e}");
             }
             kv_execute_impl(&ctx_kv_execute, &request_json)
         })
@@ -1291,7 +1295,7 @@ fn default_consistency() -> String {
 fn kv_execute_impl(ctx: &PluginHostContext, request_json: &str) -> String {
     let request: serde_json::Value = match serde_json::from_str(request_json) {
         Ok(r) => r,
-        Err(e) => return format!("\x01invalid JSON: {e}"),
+        Err(e) => return format!("\x02invalid JSON: {e}"),
     };
 
     let op = request["op"].as_str().unwrap_or("");
@@ -1314,10 +1318,10 @@ fn kv_execute_impl(ctx: &PluginHostContext, request_json: &str) -> String {
 
     match result {
         Ok(json) => match serde_json::to_string(&json) {
-            Ok(s) => format!("\0{s}"),
-            Err(e) => format!("\x01serialize failed: {e}"),
+            Ok(s) => format!("\x01{s}"),
+            Err(e) => format!("\x02serialize failed: {e}"),
         },
-        Err(e) => format!("\x01{e}"),
+        Err(e) => format!("\x02{e}"),
     }
 }
 
@@ -1680,17 +1684,17 @@ async fn kv_exec_conditional_batch(
 fn service_execute_impl(ctx: &PluginHostContext, request_json: &str) -> String {
     let request: serde_json::Value = match serde_json::from_str(request_json) {
         Ok(r) => r,
-        Err(e) => return format!("\x01invalid JSON: {e}"),
+        Err(e) => return format!("\x02invalid JSON: {e}"),
     };
 
     let service = match request["service"].as_str() {
         Some(s) => s,
-        None => return "\x01missing 'service' field".to_string(),
+        None => return "\x02missing 'service' field".to_string(),
     };
 
     let executor = match ctx.service_executors.iter().find(|e| e.service_name() == service) {
         Some(e) => Arc::clone(e),
-        None => return format!("\x01unknown service: {service}"),
+        None => return format!("\x02unknown service: {service}"),
     };
 
     let handle = tokio::runtime::Handle::current();
@@ -1823,8 +1827,8 @@ fn hook_list_impl(ctx: &PluginHostContext) -> String {
     });
 
     match serde_json::to_string(&result) {
-        Ok(s) => format!("\0{s}"),
-        Err(e) => format!("\x01serialize failed: {e}"),
+        Ok(s) => format!("\x01{s}"),
+        Err(e) => format!("\x02serialize failed: {e}"),
     }
 }
 
@@ -1842,8 +1846,8 @@ fn hook_metrics_impl(ctx: &PluginHostContext, handler_name: Option<String>) -> S
             "handlers": [],
         });
         return match serde_json::to_string(&result) {
-            Ok(s) => format!("\0{s}"),
-            Err(e) => format!("\x01serialize failed: {e}"),
+            Ok(s) => format!("\x01{s}"),
+            Err(e) => format!("\x02serialize failed: {e}"),
         };
     };
 
@@ -1893,8 +1897,8 @@ fn hook_metrics_impl(ctx: &PluginHostContext, handler_name: Option<String>) -> S
     });
 
     match serde_json::to_string(&result) {
-        Ok(s) => format!("\0{s}"),
-        Err(e) => format!("\x01serialize failed: {e}"),
+        Ok(s) => format!("\x01{s}"),
+        Err(e) => format!("\x02serialize failed: {e}"),
     }
 }
 
@@ -1906,12 +1910,12 @@ fn hook_metrics_impl(ctx: &PluginHostContext, handler_name: Option<String>) -> S
 fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
     let request: serde_json::Value = match serde_json::from_str(request_json) {
         Ok(r) => r,
-        Err(e) => return format!("\x01invalid JSON: {e}"),
+        Err(e) => return format!("\x02invalid JSON: {e}"),
     };
 
     let event_type_str = match request["event_type"].as_str() {
         Some(s) => s,
-        None => return "\x01missing 'event_type'".to_string(),
+        None => return "\x02missing 'event_type'".to_string(),
     };
 
     let payload = request.get("payload").cloned().unwrap_or(serde_json::json!({}));
@@ -1931,8 +1935,8 @@ fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
                 "handler_failures": [],
             });
             return match serde_json::to_string(&result) {
-                Ok(s) => format!("\0{s}"),
-                Err(e) => format!("\x01serialize failed: {e}"),
+                Ok(s) => format!("\x01{s}"),
+                Err(e) => format!("\x02serialize failed: {e}"),
             };
         }
     };
@@ -1945,8 +1949,8 @@ fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
             "handler_failures": [],
         });
         return match serde_json::to_string(&result) {
-            Ok(s) => format!("\0{s}"),
-            Err(e) => format!("\x01serialize failed: {e}"),
+            Ok(s) => format!("\x01{s}"),
+            Err(e) => format!("\x02serialize failed: {e}"),
         };
     };
 
@@ -1958,8 +1962,8 @@ fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
             "handler_failures": [],
         });
         return match serde_json::to_string(&result) {
-            Ok(s) => format!("\0{s}"),
-            Err(e) => format!("\x01serialize failed: {e}"),
+            Ok(s) => format!("\x01{s}"),
+            Err(e) => format!("\x02serialize failed: {e}"),
         };
     }
 
@@ -1989,8 +1993,8 @@ fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
                 "handler_failures": handler_failures,
             });
             match serde_json::to_string(&result) {
-                Ok(s) => format!("\0{s}"),
-                Err(e) => format!("\x01serialize failed: {e}"),
+                Ok(s) => format!("\x01{s}"),
+                Err(e) => format!("\x02serialize failed: {e}"),
             }
         }
         Err(e) => {
@@ -2001,8 +2005,8 @@ fn hook_trigger_impl(ctx: &PluginHostContext, request_json: &str) -> String {
                 "handler_failures": [],
             });
             match serde_json::to_string(&result) {
-                Ok(s) => format!("\0{s}"),
-                Err(e) => format!("\x01serialize failed: {e}"),
+                Ok(s) => format!("\x01{s}"),
+                Err(e) => format!("\x02serialize failed: {e}"),
             }
         }
     }
