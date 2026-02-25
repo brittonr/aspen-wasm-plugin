@@ -40,6 +40,16 @@ use aspen_core::KeyValueStore;
 use aspen_hlc::HLC;
 use aspen_plugin_api::PluginPermissions;
 use aspen_traits::ClusterController;
+use base64::Engine as B64Engine;
+
+/// Encode bytes as a base64 string using standard encoding.
+///
+/// Used to return binary data as String from host functions, working around
+/// hyperlight-wasm 0.12's broken VecBytes return type (hl_return_to_val
+/// returns Val::I32 but hostfunc_type declares ValType::I64).
+fn b64_encode(data: &[u8]) -> String {
+    base64::engine::general_purpose::STANDARD.encode(data)
+}
 
 /// A scheduler command from a WASM guest plugin.
 ///
@@ -707,21 +717,20 @@ pub fn register_plugin_host_functions(
         .map_err(|e| anyhow::anyhow!("failed to register now_ms: {e}"))?;
 
     // -- KV Store --
-    // kv_get: returns Vec<u8> with tag byte
-    // [0x00] ++ value = found, [0x01] = not-found, [0x02] ++ error_msg = error
+    // kv_get: returns String with tag byte + base64-encoded value
+    // "\x00" + base64(value) = found, "\x01" = not-found, "\x02" + error_msg = error
+    //
+    // Returns String instead of Vec<u8> because hyperlight-wasm 0.12's VecBytes
+    // return is broken (hl_return_to_val returns Val::I32 but type declares I64).
     let ctx_kv_get = Arc::clone(&ctx);
     proto
-        .register("kv_get", move |key: String| -> Vec<u8> {
+        .register("kv_get", move |key: String| -> String {
             if let Err(e) = check_permission(&ctx_kv_get.plugin_name, "kv_read", ctx_kv_get.permissions.kv_read) {
-                let mut v = vec![0x02];
-                v.extend_from_slice(e.as_bytes());
-                return v;
+                return format!("\x02{e}");
             }
             if let Err(e) = validate_key_prefix(&ctx_kv_get.plugin_name, &ctx_kv_get.allowed_kv_prefixes, &key, "read")
             {
-                let mut v = vec![0x02];
-                v.extend_from_slice(e.as_bytes());
-                return v;
+                return format!("\x02{e}");
             }
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
@@ -730,12 +739,9 @@ pub fn register_plugin_host_functions(
                     Ok(result) => match result.kv {
                         Some(entry) => {
                             let bytes = entry.value.into_bytes();
-                            let mut v = Vec::with_capacity(1 + bytes.len());
-                            v.push(0x00);
-                            v.extend_from_slice(&bytes);
-                            v
+                            format!("\x00{}", b64_encode(&bytes))
                         }
-                        None => vec![0x01],
+                        None => "\x01".to_string(),
                     },
                     Err(e) => {
                         tracing::warn!(
@@ -744,9 +750,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin kv_get failed"
                         );
-                        let mut v = vec![0x02];
-                        v.extend_from_slice(format!("kv_get failed: {e}").as_bytes());
-                        v
+                        format!("\x02kv_get failed: {e}")
                     }
                 }
             })
@@ -775,20 +779,16 @@ pub fn register_plugin_host_functions(
         })
         .map_err(|e| anyhow::anyhow!("failed to register kv_delete: {e}"))?;
 
-    // kv_scan: returns Vec<u8> with tag byte
-    // [0x00] ++ json_bytes = ok, [0x01] ++ error_msg = error
+    // kv_scan: returns String with tag byte + base64-encoded JSON
+    // "\x00" + base64(json_bytes) = ok, "\x01" + error_msg = error
     let ctx_kv_scan = Arc::clone(&ctx);
     proto
-        .register("kv_scan", move |prefix: String, limit: u32| -> Vec<u8> {
+        .register("kv_scan", move |prefix: String, limit: u32| -> String {
             if let Err(e) = check_permission(&ctx_kv_scan.plugin_name, "kv_read", ctx_kv_scan.permissions.kv_read) {
-                let mut v = vec![0x01];
-                v.extend_from_slice(e.as_bytes());
-                return v;
+                return format!("\x01{e}");
             }
             if let Err(e) = validate_scan_prefix(&ctx_kv_scan.plugin_name, &ctx_kv_scan.allowed_kv_prefixes, &prefix) {
-                let mut v = vec![0x01];
-                v.extend_from_slice(e.as_bytes());
-                return v;
+                return format!("\x01{e}");
             }
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
@@ -807,17 +807,8 @@ pub fn register_plugin_host_functions(
                         let entries: Vec<(String, Vec<u8>)> =
                             result.entries.into_iter().map(|entry| (entry.key, entry.value.into_bytes())).collect();
                         match serde_json::to_vec(&entries) {
-                            Ok(json) => {
-                                let mut v = Vec::with_capacity(1 + json.len());
-                                v.push(0x00);
-                                v.extend_from_slice(&json);
-                                v
-                            }
-                            Err(e) => {
-                                let mut v = vec![0x01];
-                                v.extend_from_slice(format!("kv_scan JSON encode failed: {e}").as_bytes());
-                                v
-                            }
+                            Ok(json) => format!("\x00{}", b64_encode(&json)),
+                            Err(e) => format!("\x01kv_scan JSON encode failed: {e}"),
                         }
                     }
                     Err(e) => {
@@ -827,9 +818,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin kv_scan failed"
                         );
-                        let mut v = vec![0x01];
-                        v.extend_from_slice(format!("kv_scan failed: {e}").as_bytes());
-                        v
+                        format!("\x01kv_scan failed: {e}")
                     }
                 }
             })
@@ -869,16 +858,14 @@ pub fn register_plugin_host_functions(
         .register("blob_has", move |hash: String| -> bool { blob_has(&ctx_blob_has, &hash) })
         .map_err(|e| anyhow::anyhow!("failed to register blob_has: {e}"))?;
 
-    // blob_get: returns Vec<u8> with tag byte
-    // [0x00] ++ data = found, [0x01] = not-found, [0x02] ++ error_msg = error
+    // blob_get: returns String with tag byte + base64-encoded data
+    // "\x00" + base64(data) = found, "\x01" = not-found, "\x02" + error_msg = error
     let ctx_blob_get = Arc::clone(&ctx);
     proto
-        .register("blob_get", move |hash: String| -> Vec<u8> {
+        .register("blob_get", move |hash: String| -> String {
             if let Err(e) = check_permission(&ctx_blob_get.plugin_name, "blob_read", ctx_blob_get.permissions.blob_read)
             {
-                let mut v = vec![0x02];
-                v.extend_from_slice(e.as_bytes());
-                return v;
+                return format!("\x02{e}");
             }
             let blob_hash = match hash.parse::<iroh_blobs::Hash>() {
                 Ok(h) => h,
@@ -889,21 +876,14 @@ pub fn register_plugin_host_functions(
                         error = %e,
                         "wasm plugin blob_get: invalid hash"
                     );
-                    let mut v = vec![0x02];
-                    v.extend_from_slice(format!("invalid hash: {e}").as_bytes());
-                    return v;
+                    return format!("\x02invalid hash: {e}");
                 }
             };
             let handle = tokio::runtime::Handle::current();
             handle.block_on(async {
                 match ctx_blob_get.blob_store.get_bytes(&blob_hash).await {
-                    Ok(Some(bytes)) => {
-                        let mut v = Vec::with_capacity(1 + bytes.len());
-                        v.push(0x00);
-                        v.extend_from_slice(&bytes);
-                        v
-                    }
-                    Ok(None) => vec![0x01],
+                    Ok(Some(bytes)) => format!("\x00{}", b64_encode(&bytes)),
+                    Ok(None) => "\x01".to_string(),
                     Err(e) => {
                         tracing::warn!(
                             plugin = %ctx_blob_get.plugin_name,
@@ -911,9 +891,7 @@ pub fn register_plugin_host_functions(
                             error = %e,
                             "wasm plugin blob_get failed"
                         );
-                        let mut v = vec![0x02];
-                        v.extend_from_slice(format!("blob_get failed: {e}").as_bytes());
-                        v
+                        format!("\x02blob_get failed: {e}")
                     }
                 }
             })
@@ -939,13 +917,14 @@ pub fn register_plugin_host_functions(
         .map_err(|e| anyhow::anyhow!("failed to register node_id: {e}"))?;
 
     // -- Randomness --
+    // Returns base64-encoded string (VecBytes return is broken in hyperlight-wasm 0.12)
     let ctx_random = Arc::clone(&ctx);
     proto
-        .register("random_bytes", move |count: u32| -> Vec<u8> {
+        .register("random_bytes", move |count: u32| -> String {
             if check_permission(&ctx_random.plugin_name, "randomness", ctx_random.permissions.randomness).is_err() {
-                return Vec::new();
+                return String::new();
             }
-            random_bytes(count)
+            b64_encode(&random_bytes(count))
         })
         .map_err(|e| anyhow::anyhow!("failed to register random_bytes: {e}"))?;
 
@@ -975,13 +954,14 @@ pub fn register_plugin_host_functions(
         .map_err(|e| anyhow::anyhow!("failed to register leader_id: {e}"))?;
 
     // -- Crypto --
+    // sign: returns base64-encoded signature (VecBytes return broken in hyperlight-wasm 0.12)
     let ctx_sign = Arc::clone(&ctx);
     proto
-        .register("sign", move |data: Vec<u8>, _len: i32| -> Vec<u8> {
+        .register("sign", move |data: Vec<u8>, _len: i32| -> String {
             if check_permission(&ctx_sign.plugin_name, "signing", ctx_sign.permissions.signing).is_err() {
-                return Vec::new();
+                return String::new();
             }
-            sign(&ctx_sign, &data)
+            b64_encode(&sign(&ctx_sign, &data))
         })
         .map_err(|e| anyhow::anyhow!("failed to register sign: {e}"))?;
 
