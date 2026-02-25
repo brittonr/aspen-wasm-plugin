@@ -82,7 +82,7 @@ pub mod test_support {
 
         // Call plugin_info to extract identity
         let info_bytes: Vec<u8> = loaded
-            .call_guest_function("plugin_info", Vec::<u8>::new())
+            .call_guest_function("plugin_info", (Vec::<u8>::new(), 0i32))
             .map_err(|e| anyhow::anyhow!("failed to call plugin_info: {e}"))?;
         let info: aspen_plugin_api::PluginInfo =
             serde_json::from_slice(&info_bytes).map_err(|e| anyhow::anyhow!("invalid plugin_info JSON: {e}"))?;

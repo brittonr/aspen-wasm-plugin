@@ -164,7 +164,7 @@ impl WasmPluginHandler {
             tokio::task::spawn_blocking(move || {
                 let mut guard = sandbox.lock().map_err(|e| anyhow::anyhow!("sandbox mutex poisoned: {e}"))?;
                 guard
-                    .call_guest_function::<Vec<u8>>("plugin_init", Vec::<u8>::new())
+                    .call_guest_function::<Vec<u8>>("plugin_init", (Vec::<u8>::new(), 0i32))
                     .map_err(|e| anyhow::anyhow!("WASM plugin '{handler_name}' init failed: {e}"))
             }),
         )
@@ -253,7 +253,7 @@ impl WasmPluginHandler {
             tokio::task::spawn_blocking(move || {
                 let mut guard = sandbox.lock().map_err(|e| anyhow::anyhow!("sandbox mutex poisoned: {e}"))?;
                 guard
-                    .call_guest_function::<Vec<u8>>("plugin_shutdown", Vec::<u8>::new())
+                    .call_guest_function::<Vec<u8>>("plugin_shutdown", (Vec::<u8>::new(), 0i32))
                     .map_err(|e| anyhow::anyhow!("WASM plugin '{handler_name}' shutdown failed: {e}"))
             }),
         )
@@ -352,7 +352,7 @@ impl WasmPluginHandler {
             tokio::task::spawn_blocking(move || {
                 let mut guard = sandbox.lock().map_err(|e| anyhow::anyhow!("sandbox mutex poisoned: {e}"))?;
                 guard
-                    .call_guest_function::<Vec<u8>>("plugin_health", Vec::<u8>::new())
+                    .call_guest_function::<Vec<u8>>("plugin_health", (Vec::<u8>::new(), 0i32))
                     .map_err(|e| anyhow::anyhow!("WASM plugin '{handler_name}' health check failed: {e}"))
             }),
         )
@@ -410,6 +410,7 @@ impl RequestHandler for WasmPluginHandler {
         }
 
         let input = marshal::serialize_request(&request)?;
+        let input_len = input.len() as i32;
         let sandbox = Arc::clone(&self.sandbox);
         let handler_name = self.name;
         let timeout = self.execution_timeout;
@@ -419,7 +420,7 @@ impl RequestHandler for WasmPluginHandler {
             tokio::task::spawn_blocking(move || {
                 let mut guard = sandbox.lock().map_err(|e| anyhow::anyhow!("sandbox mutex poisoned: {e}"))?;
                 guard
-                    .call_guest_function::<Vec<u8>>("handle_request", input)
+                    .call_guest_function::<Vec<u8>>("handle_request", (input, input_len))
                     .map_err(|e| anyhow::anyhow!("WASM plugin '{handler_name}' execution failed: {e}"))
             }),
         )

@@ -153,6 +153,7 @@ impl PluginEventRouter {
                 return false;
             }
         };
+        let input_len = input.len() as i32;
 
         let result = tokio::time::timeout(
             timeout,
@@ -168,7 +169,7 @@ impl PluginEventRouter {
                         return;
                     }
                 };
-                match guard.call_guest_function::<Vec<u8>>("plugin_on_hook_event", input) {
+                match guard.call_guest_function::<Vec<u8>>("plugin_on_hook_event", (input, input_len)) {
                     Ok(_) => {
                         debug!(
                             plugin = %plugin_name,

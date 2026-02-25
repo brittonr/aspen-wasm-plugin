@@ -104,7 +104,8 @@ impl PluginScheduler {
                             }
                         };
                         let input = serde_json::to_vec(&tn).unwrap_or_default();
-                        match guard.call_guest_function::<Vec<u8>>("plugin_on_timer", input) {
+                        let input_len = input.len() as i32;
+                        match guard.call_guest_function::<Vec<u8>>("plugin_on_timer", (input, input_len)) {
                             Ok(_) => {
                                 debug!(plugin = %pn, timer = %tn, "timer callback completed");
                             }

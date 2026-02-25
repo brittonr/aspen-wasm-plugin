@@ -503,8 +503,10 @@ async fn load_plugin(
         .map_err(|e| anyhow::anyhow!("failed to load WASM module for '{}': {e}", manifest.name))?;
 
     // Verify plugin info matches manifest
+    let empty_input = Vec::<u8>::new();
+    let empty_len = empty_input.len() as i32;
     let info_bytes: Vec<u8> = loaded
-        .call_guest_function("plugin_info", Vec::<u8>::new())
+        .call_guest_function("plugin_info", (empty_input, empty_len))
         .map_err(|e| anyhow::anyhow!("failed to call plugin_info for '{}': {e}", manifest.name))?;
     let info: aspen_plugin_api::PluginInfo = serde_json::from_slice(&info_bytes)
         .map_err(|e| anyhow::anyhow!("invalid plugin_info from '{}': {e}", manifest.name))?;
