@@ -90,9 +90,14 @@ impl LivePluginRegistry {
             continuation_token: None,
         };
 
+        // Use scan_local() to read from the local state machine without requiring
+        // a leader round-trip. This allows follower nodes to discover and load
+        // plugins at startup even when the leader is temporarily unreachable.
+        // Plugin manifests are written through Raft consensus, so by the time
+        // they appear in the local state machine they are committed and durable.
         let scan_result = ctx
             .kv_store
-            .scan(scan_request)
+            .scan_local(scan_request)
             .await
             .map_err(|e| anyhow::anyhow!("failed to scan plugin manifests: {e}"))?;
 
