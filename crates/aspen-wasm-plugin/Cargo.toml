@@ -12,9 +12,9 @@ aspen-rpc-core = { path = "../../../aspen/crates/aspen-rpc-core", features = ["b
 # Local crates
 aspen-client-api = { path = "../../../aspen/crates/aspen-client-api" }
 aspen-core = { path = "../../../aspen/crates/aspen-core" }
-aspen-blob = { path = "../../../aspen-blob/crates/aspen-blob" }
+aspen-blob = { path = "../../../aspen/crates/aspen-blob" }
 aspen-constants = { path = "../../../aspen/crates/aspen-constants" }
-aspen-plugin-api = { path = "../../../aspen-plugin-api/crates/aspen-plugin-api" }
+aspen-plugin-api = { path = "../../../aspen/crates/aspen-plugin-api" }
 aspen-kv-types = { path = "../../../aspen/crates/aspen-kv-types" }
 aspen-traits = { path = "../../../aspen/crates/aspen-traits" }
 
@@ -57,7 +57,7 @@ hex = "0.4"
 base64 = "0.22"
 
 # Hook service (optional, for hook management host functions)
-aspen-hooks = { path = "../../../aspen-hooks/crates/aspen-hooks", optional = true }
+aspen-hooks = { path = "../../../aspen/crates/aspen-hooks", optional = true }
 aspen-hooks-types = { path = "../../../aspen/crates/aspen-hooks-types", optional = true }
 
 [features]
