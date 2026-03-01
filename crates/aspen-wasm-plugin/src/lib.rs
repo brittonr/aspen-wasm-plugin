@@ -69,7 +69,17 @@ pub mod test_support {
         ctx: Arc<PluginHostContext>,
         memory_limit: u64,
     ) -> anyhow::Result<WasmPluginHandler> {
+        // AOT precompile, matching production load_plugin in registry.rs.
+        // hyperlight-wasm's guest runtime uses Module::deserialize (wasmtime)
+        // which expects precompiled AOT artifacts, not raw .wasm bytes.
+        let aot_bytes = crate::registry::precompile_wasm(wasm_bytes)
+            .map_err(|e| anyhow::anyhow!("AOT precompilation failed: {e}"))?;
+
+        // Size input buffer to fit the AOT artifact + headroom (same as production).
+        let input_buffer_size = aot_bytes.len() + 128 * 1024;
+
         let mut proto = hyperlight_wasm::SandboxBuilder::new()
+            .with_guest_input_buffer_size(input_buffer_size)
             .with_guest_heap_size(memory_limit)
             .build()
             .map_err(|e| anyhow::anyhow!("failed to create sandbox: {e}"))?;
@@ -79,7 +89,7 @@ pub mod test_support {
         let wasm_sb = proto.load_runtime().map_err(|e| anyhow::anyhow!("failed to load WASM runtime: {e}"))?;
 
         let mut loaded = wasm_sb
-            .load_module_from_buffer(wasm_bytes)
+            .load_module_from_buffer(&aot_bytes)
             .map_err(|e| anyhow::anyhow!("failed to load WASM module: {e}"))?;
 
         // Call plugin_info to extract identity

@@ -43,6 +43,12 @@ pub struct WasmPluginHandler {
     name: &'static str,
     /// Request variant names this plugin handles.
     handles: Vec<String>,
+    /// KV key prefixes this plugin owns. When non-empty and the request is a
+    /// KV operation (WriteKey/ReadKey/DeleteKey/ScanKeys), `can_handle` only
+    /// returns true if the request's key starts with one of these prefixes.
+    /// This enables prefix-based dispatch so plugins intercept only their
+    /// namespaced keys while the core KV handler serves everything else.
+    kv_prefixes: Vec<String>,
     /// The loaded WASM sandbox. Mutex because `call_guest_function` takes `&mut`.
     sandbox: Arc<std::sync::Mutex<hyperlight_wasm::LoadedWasmSandbox>>,
     /// Wall-clock execution timeout for a single guest call.
@@ -92,6 +98,7 @@ impl WasmPluginHandler {
         Self {
             name: Box::leak(name.into_boxed_str()),
             handles,
+            kv_prefixes: Vec::new(),
             sandbox: Arc::new(std::sync::Mutex::new(sandbox)),
             execution_timeout,
             state: Arc::new(AtomicU8::new(0)), // Loading
@@ -110,6 +117,7 @@ impl WasmPluginHandler {
     pub fn new_with_scheduler(
         name: String,
         handles: Vec<String>,
+        kv_prefixes: Vec<String>,
         sandbox: hyperlight_wasm::LoadedWasmSandbox,
         execution_timeout: Duration,
         scheduler_requests: Arc<std::sync::Mutex<Vec<crate::host::SchedulerCommand>>>,
@@ -118,6 +126,7 @@ impl WasmPluginHandler {
         Self {
             name: Box::leak(name.into_boxed_str()),
             handles,
+            kv_prefixes,
             sandbox: Arc::new(std::sync::Mutex::new(sandbox)),
             execution_timeout,
             state: Arc::new(AtomicU8::new(0)),
@@ -444,11 +453,53 @@ impl WasmPluginHandler {
     }
 }
 
+/// Extract the key (or prefix for scans) from a KV request variant.
+///
+/// Returns `Some(key)` for WriteKey/ReadKey/DeleteKey/ScanKeys,
+/// `None` for all other request types.
+fn extract_kv_key(request: &ClientRpcRequest) -> Option<&str> {
+    match request {
+        ClientRpcRequest::WriteKey { key, .. }
+        | ClientRpcRequest::ReadKey { key }
+        | ClientRpcRequest::DeleteKey { key }
+        | ClientRpcRequest::CompareAndSwapKey { key, .. }
+        | ClientRpcRequest::CompareAndDeleteKey { key, .. } => Some(key.as_str()),
+        ClientRpcRequest::ScanKeys { prefix, .. } => Some(prefix.as_str()),
+        _ => None,
+    }
+}
+
 #[async_trait::async_trait]
 impl RequestHandler for WasmPluginHandler {
     fn can_handle(&self, request: &ClientRpcRequest) -> bool {
         let name = marshal::extract_variant_name(request);
-        self.handles.iter().any(|h| h == name)
+        if !self.handles.iter().any(|h| h == name) {
+            return false;
+        }
+        // For KV operations, only claim the request if the key matches
+        // one of our declared kv_prefixes. This enables prefix-based
+        // dispatch: the plugin intercepts its namespaced keys while the
+        // core KV handler serves everything else.
+        if !self.kv_prefixes.is_empty() {
+            if let Some(key) = extract_kv_key(request) {
+                return self.kv_prefixes.iter().any(|p| key.starts_with(p));
+            }
+        }
+        true
+    }
+
+    fn claims_kv_prefix(&self, request: &ClientRpcRequest) -> bool {
+        if self.kv_prefixes.is_empty() {
+            return false;
+        }
+        let name = marshal::extract_variant_name(request);
+        if !self.handles.iter().any(|h| h == name) {
+            return false;
+        }
+        if let Some(key) = extract_kv_key(request) {
+            return self.kv_prefixes.iter().any(|p| key.starts_with(p));
+        }
+        false
     }
 
     async fn handle(

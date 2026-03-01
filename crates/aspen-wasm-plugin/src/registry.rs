@@ -555,6 +555,7 @@ async fn load_plugin(
     let handler = Arc::new(WasmPluginHandler::new_with_scheduler(
         manifest.name.clone(),
         manifest.handles.clone(),
+        manifest.kv_prefixes.clone(),
         loaded,
         execution_timeout,
         scheduler_requests,
@@ -675,7 +676,7 @@ mod tests {
 /// 1. Use the exact wasmtime version matching the embedded wasm_runtime
 /// 2. Target `x86_64-unknown-none` (closest to `x86_64-hyperlight-none`)
 ///    since the guest is a bare-metal micro-VM, not a linux process
-fn precompile_wasm(wasm_bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
+pub fn precompile_wasm(wasm_bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
     let mut config = wasmtime::Config::new();
     config.target("x86_64-unknown-none")?;
     // The guest wasm_runtime enables component_model; precompilation must match.

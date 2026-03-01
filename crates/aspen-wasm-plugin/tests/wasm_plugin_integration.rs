@@ -25,7 +25,7 @@ use aspen_wasm_plugin::test_support::PluginHostContext;
 use aspen_wasm_plugin::test_support::load_wasm_handler;
 
 const ECHO_PLUGIN_NAME: &str = "echo-plugin";
-const PLUGIN_MEMORY: u64 = 4 * 1024 * 1024; // 4 MiB
+const PLUGIN_MEMORY: u64 = 128 * 1024 * 1024; // 128 MiB (matches PLUGIN_DEFAULT_MEMORY)
 
 /// Load the echo plugin WASM binary from the build output directory.
 ///
@@ -60,19 +60,29 @@ fn create_test_host_context(
     blob_store: Arc<dyn BlobStore>,
     controller: Arc<dyn aspen_traits::ClusterController>,
 ) -> Arc<PluginHostContext> {
-    Arc::new(PluginHostContext::new(
-        kv_store,
-        blob_store,
-        controller,
-        1, // node_id
-        ECHO_PLUGIN_NAME.to_string(),
-    ))
+    Arc::new(
+        PluginHostContext::new(
+            kv_store,
+            blob_store,
+            controller,
+            1, // node_id
+            ECHO_PLUGIN_NAME.to_string(),
+        )
+        .with_permissions(aspen_plugin_api::PluginPermissions::all()),
+    )
 }
 
 /// Create a `WasmPluginHandler` from the echo plugin WASM binary.
 fn create_echo_handler(ctx: Arc<PluginHostContext>) -> aspen_wasm_plugin::WasmPluginHandler {
     let wasm_bytes = load_echo_plugin_wasm();
     load_wasm_handler(&wasm_bytes, ECHO_PLUGIN_NAME, ctx, PLUGIN_MEMORY).expect("failed to load echo plugin")
+}
+
+/// Create and initialize an echo handler (transitions to Ready state).
+async fn create_and_init_echo_handler(ctx: Arc<PluginHostContext>) -> aspen_wasm_plugin::WasmPluginHandler {
+    let handler = create_echo_handler(ctx);
+    handler.call_init().await.expect("plugin init should succeed");
+    handler
 }
 
 /// Create a minimal `ClientProtocolContext` for the `RequestHandler::handle` signature.
@@ -94,7 +104,7 @@ async fn wasm_plugin_ping_returns_pong() {
     let blobs: Arc<dyn BlobStore> = Arc::new(InMemoryBlobStore::new());
     let ctrl = DeterministicClusterController::new();
     let ctx = create_test_host_context(kv, blobs, ctrl);
-    let handler = create_echo_handler(ctx);
+    let handler = create_and_init_echo_handler(ctx).await;
     let proto_ctx = create_dummy_protocol_context().await;
 
     let response = handler.handle(ClientRpcRequest::Ping, &proto_ctx).await.expect("handle Ping should succeed");
@@ -115,7 +125,7 @@ async fn wasm_plugin_read_key_found() {
         .expect("write should succeed");
 
     let ctx = create_test_host_context(kv, blobs, ctrl);
-    let handler = create_echo_handler(ctx);
+    let handler = create_and_init_echo_handler(ctx).await;
     let proto_ctx = create_dummy_protocol_context().await;
 
     let response = handler
@@ -144,7 +154,7 @@ async fn wasm_plugin_read_key_not_found() {
     let blobs: Arc<dyn BlobStore> = Arc::new(InMemoryBlobStore::new());
     let ctrl = DeterministicClusterController::new();
     let ctx = create_test_host_context(kv, blobs, ctrl);
-    let handler = create_echo_handler(ctx);
+    let handler = create_and_init_echo_handler(ctx).await;
     let proto_ctx = create_dummy_protocol_context().await;
 
     let response = handler
@@ -209,7 +219,7 @@ async fn wasm_plugin_unhandled_request_dispatched() {
     let blobs: Arc<dyn BlobStore> = Arc::new(InMemoryBlobStore::new());
     let ctrl = DeterministicClusterController::new();
     let ctx = create_test_host_context(kv, blobs, ctrl);
-    let handler = create_echo_handler(ctx);
+    let handler = create_and_init_echo_handler(ctx).await;
     let proto_ctx = create_dummy_protocol_context().await;
 
     // Send WriteKey through handle() directly (bypassing can_handle)
