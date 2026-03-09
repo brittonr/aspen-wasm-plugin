@@ -466,9 +466,15 @@ async fn load_plugin(
     // Input buffer must be large enough to hold the AOT artifact
     // (hyperlight pushes module via the input data buffer). Default is 192KB
     // which is too small for typical plugins. Size to artifact + headroom.
+    //
+    // Output buffer must be large enough for the largest possible guest
+    // return value (JSON-serialized ClientRpcResponse). hyperlight defaults
+    // to 16KB which overflows on CI job results, KV scan payloads, etc.
     let input_buffer_size = aot_bytes.len() + 128 * 1024;
+    let output_buffer_size = aspen_constants::wasm::DEFAULT_WASM_GUEST_OUTPUT_BUFFER_SIZE;
     let mut proto = hyperlight_wasm::SandboxBuilder::new()
         .with_guest_input_buffer_size(input_buffer_size)
+        .with_guest_output_buffer_size(output_buffer_size)
         .with_guest_heap_size(memory_limit)
         .build()
         .map_err(|e| anyhow::anyhow!("failed to create sandbox for '{}': {e}", manifest.name))?;

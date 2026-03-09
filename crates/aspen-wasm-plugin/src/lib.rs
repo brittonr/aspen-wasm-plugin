@@ -76,10 +76,13 @@ pub mod test_support {
             .map_err(|e| anyhow::anyhow!("AOT precompilation failed: {e}"))?;
 
         // Size input buffer to fit the AOT artifact + headroom (same as production).
+        // Output buffer sized to match production (see registry.rs).
         let input_buffer_size = aot_bytes.len() + 128 * 1024;
+        let output_buffer_size = aspen_constants::wasm::DEFAULT_WASM_GUEST_OUTPUT_BUFFER_SIZE;
 
         let mut proto = hyperlight_wasm::SandboxBuilder::new()
             .with_guest_input_buffer_size(input_buffer_size)
+            .with_guest_output_buffer_size(output_buffer_size)
             .with_guest_heap_size(memory_limit)
             .build()
             .map_err(|e| anyhow::anyhow!("failed to create sandbox: {e}"))?;
