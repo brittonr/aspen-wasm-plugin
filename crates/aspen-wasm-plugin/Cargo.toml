@@ -21,9 +21,9 @@ aspen-traits = { path = "../../../aspen/crates/aspen-traits" }
 # Hyperlight WASM sandbox
 hyperlight-wasm = "0.12"
 
-# Wasmtime for AOT precompilation — must be exact version matching
-# hyperlight-wasm's embedded wasm_runtime (check get_wasmtime_version())
-wasmtime = { version = "=36.0.3", default-features = false, features = ["cranelift", "component-model"] }
+# Wasmtime for AOT precompilation — must remain in hyperlight-wasm-runtime's
+# 36.x ABI family while requiring the RustSec-patched point release.
+wasmtime = { version = "=36.0.7", default-features = false, features = ["cranelift", "component-model"] }
 
 # Iroh blob hashes and crypto
 iroh-blobs = "0.97"
